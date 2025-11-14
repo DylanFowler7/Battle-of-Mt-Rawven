@@ -7,6 +7,7 @@ from units import *
 
 card_list = []
 turn_count = 0
+previous_turn_count = 0
 player_1_current_mana = 3
 player_2_current_mana = 3
 bot_current_mana = 6
@@ -20,6 +21,7 @@ tactician_number = 0
 drummer_number = 0
 paladin_number = 0
 investor_number = 0
+action_count = 2
 YELLOW = "\033[1;33m"
 LIGHT_WHITE = "\033[1;37m"
 CYAN = "\033[0;36m"
@@ -34,10 +36,6 @@ BOLD = "\033[1m"
 LIGHT_CYAN = "\033[1;36m"
 NEGATIVE = "\033[7m"
 is_player_1_turn = True
-if is_player_1_turn == True:
-    player = 1
-if is_player_1_turn == False:
-    player = 2
 line_1 = "[]  []  []  []  []  []  []  []  []  []"
 line_1_split = line_1.split("  ")
 line_2 = "[]  []  []  []  []  []  []  []  []  []"
@@ -62,6 +60,9 @@ previous_screen = ""
 
 def game_loop():
     global previous_screen
+    global turn_count
+    global previous_turn_count
+    global is_player_1_turn
     if turn_count == 0:
         generate_map()
     if turn_count == .5:
@@ -80,8 +81,17 @@ def game_loop():
     print(f"{LIGHT_GREEN}i - Investor{LIGHT_WHITE}        J   {line_10}")
     if turn_count == 0:
         choose_starting_units()
-    if turn_count >= 1:
-        second_input = input(f"Player {player}: Select a Command: ")
+    turn_determiner = turn_count % 2
+    print(f"Actions Remaining: {action_count}")
+    if turn_count > 0 and previous_turn_count < turn_count:
+        previous_turn_count = turn_count
+        resource_gain()
+    if turn_determiner != 0 and turn_count > 0:
+        second_input = input(f"Player 1: Select a Command: ")
+        is_player_1_turn = True
+    if turn_determiner == 0 and turn_count > 0:
+        second_input = input(f"Player 2: Select a Command: ")
+        is_player_1_turn = False
     if second_input == "":
         print("Invalid Command")
         game_loop()
@@ -224,7 +234,7 @@ def choose_starting_units():
     global p1_first_units
     global p2_first_units
     is_player_2_selection = False
-    print("Commands     (U)nits")
+    print("Actions     (U)nits")
     print(f"1 Mana: {LIGHT_BLUE}(S)cout{LIGHT_WHITE} or {CYAN}(W)ind Walker{LIGHT_WHITE}")
     print(f"2 Mana: {LIGHT_PURPLE}(T)actician{LIGHT_WHITE} or {LIGHT_CYAN}(D)rummer{LIGHT_WHITE}")
     print(f"3 Mana: {YELLOW}(P)aladin{LIGHT_WHITE} or {LIGHT_GREEN}(I)nvestor{LIGHT_WHITE}")
@@ -380,7 +390,7 @@ def p1_place_starting_units():
                 space = letter + str(number)
                 not_allowed.append(space)
         allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
-        print("Commands         (G)uide")
+        print("Actions         (G)uide")
         print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
         print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
         print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
@@ -432,35 +442,73 @@ def p1_place_starting_units():
                         if second_split[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{second_split[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(unit)
-                                if unit_second == unit:
+                                if place_unit == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if second_split[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                 resplit_unit = []
                 for first in split_unit:
                     if place_unit == first[0]:
                         resplit_unit = first[1].split(" ")
                         if resplit_unit[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                 map_join(placement_letter, placement)
                 if place_unit in unit_first:
                     p1_first_units.pop(int(place_unit) - 1)
@@ -496,7 +544,7 @@ def p2_place_starting_units():
                 space = letter + str(number)
                 not_allowed.append(space)
         allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
-        print("Commands         (G)uide")
+        print("Actions         (G)uide")
         print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
         print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
         print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
@@ -550,17 +598,34 @@ def p2_place_starting_units():
                     if place_unit in unit_second:
                         if second_split[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{second_split[1]}{LIGHT_WHITE}"
-                            units.location = space_selection
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if second_split[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{second_split[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                if place_unit == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                 resplit_unit = []
                 for first in split_unit:
                     if place_unit == first[0]:
@@ -568,16 +633,40 @@ def p2_place_starting_units():
                         print(resplit_unit)
                         if resplit_unit[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                         if resplit_unit[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{resplit_unit[1]}{LIGHT_WHITE}"
+                            for unit in player_1_units:
+                                print(first[1], unit)
+                                if first[1] == f"{unit.name} {unit.number}":
+                                    unit.location = space_selection
                 map_join(placement_letter, placement)
                 if place_unit in unit_first:
                     p2_first_units.pop(int(place_unit) - 1)
@@ -595,9 +684,10 @@ def p2_place_starting_units():
         p1_place_starting_units()
                 
 def unit_display():
+    global is_player_1_turn
     if is_player_1_turn == True:
         for units in player_1_units:
-            print(units)
+            print(units.unit_display())
     else:
         for units in player_2_units:
             print(units)
@@ -620,17 +710,36 @@ def unit_display():
         
 
 def actions():
-    action_count = 2
-    print("Actions:")
-    print("(M)ove    (C)ard    (E)xpend    (B)uy    (R)eturn")
-    action_selection = input("Select an action:")
+    global previous_screen
+    global player_1_current_mana
+    global player_2_current_mana
+    global turn_count
+    print("Actions      (M)ove    (C)ard    (E)xpend Mana    (B)uy Unit   (R)eturn")
+    turn_determiner = turn_count % 2
+    if turn_determiner != 0 and turn_count > 0:
+        action_selection = input(f"Player 1: Select an action: ")
+    if turn_determiner == 0 and turn_count > 0:
+        action_selection = input(f"Player 2: Select an action: ")
+    if action_selection.lower() == "buy" or action_selection.lower() == "unit" or action_selection.lower() == "buy unit" or action_selection.lower() == "b":
+        if is_player_1_turn == True and player_1_current_mana == 0:
+            print("Not enough mana to buy a unit")
+            actions()
+        if is_player_1_turn == False and player_2_current_mana == 0:
+            print("Not enough mana to buy a unit")
+            actions()
+        else:
+            previous_screen = "actions"
+            create_unit()
     if action_selection.lower() == "return" or action_selection.lower() == "r":
+        print("Returning")
         game_loop()
+    else:
+        print("Invalid input")
+        actions()
 
 def guide():
     global previous_screen
-    print(f"{LIGHT_WHITE}Actions:")
-    print("(U)nits  (R)eturn")
+    print("{LIGHT_WHITE}Actions     (U)nits  (R)eturn")
     print("Rules")
     print(f"The game will start with a randomly generated 10x10 board with 5 {BROWN}Mountian{LIGHT_WHITE}, 5 {PURPLE}Arcane{LIGHT_WHITE},")
     print(f"5 {NEGATIVE}Conquest{GREEN}{LIGHT_WHITE}, and 5 {GREEN}Resupply{LIGHT_WHITE} tiles placed upon it. These tiles will never be touching")
@@ -641,6 +750,7 @@ def guide():
     print("the start of the game. You then take turns placing your units on the edge of the board, starting with player 2.")
     print("You have 2 actions you may take on your turn. These may be any combination of the following:")
     print("Move a unit, Play a card, Expend a point for 3 mana, Spend mana to purchase units.")
+    print("A max of 9 of each unit type can be on the map at once.")
     guide_return = input("Select an action: ")
     if guide_return:
         if guide_return[0].lower() == "u":
@@ -655,6 +765,10 @@ def guide():
                 p1_place_starting_units()
             if previous_screen == "p2_place_units":
                 p2_place_starting_units()
+            if previous_screen == "create":
+                create_unit()
+            if previous_screen == "p1_place_new_unit":
+                p1_place_unit()
     else:
         print("Invalid input")
         guide()
@@ -673,3 +787,510 @@ def unit_guide():
         guide()
     if previous_screen == "choose_starting_units":
         choose_starting_units()
+        
+def create_unit():
+    global previous_screen
+    global is_player_1_turn
+    global player_1_units
+    global player_2_units
+    global player_1_current_mana
+    global player_2_current_mana
+    global scout_number
+    global wind_walker_number
+    global tactician_number
+    global drummer_number
+    global paladin_number
+    global investor_number
+    global action_count
+    print(f"{LIGHT_WHITE}Actions     (U)nits  (R)eturn")
+    print(f"1 Mana: {LIGHT_BLUE}(S)cout{LIGHT_WHITE} or {CYAN}(W)ind Walker{LIGHT_WHITE}")
+    print(f"2 Mana: {LIGHT_PURPLE}(T)actician{LIGHT_WHITE} or {LIGHT_CYAN}(D)rummer{LIGHT_WHITE}")
+    print(f"3 Mana: {YELLOW}(P)aladin{LIGHT_WHITE} or {LIGHT_GREEN}(I)nvestor{LIGHT_WHITE}")
+    unit_creation = input("Select an action: ")
+    temp_unit_list = []
+    if unit_creation:
+        if unit_creation[0].lower() == "u":
+            previous_screen = "create"
+            unit_guide()
+        if unit_creation[0].lower() == "r":
+            if previous_screen == "actions":
+                game_loop()
+        if unit_creation[0].lower() == "s":
+            for unit in player_1_units:
+                if unit.name == "Scout":
+                    temp_unit_list.append(unit.number)
+            for unit in player_2_units:
+                if unit.name == "Scout":
+                    temp_unit_list.append(unit.number)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                player_1_current_mana -= 1
+                scout_number = len(temp_unit_list)
+                while scout_number in sorted_temp_units:
+                    scout_number += 1
+                    if scout_number >= 9:
+                        scout_number = 1
+                new_unit = Scout(scout_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                player_2_current_mana -= 1
+                scout_number = len(temp_unit_list)
+                while scout_number in sorted_temp_units:
+                    scout_number += 1
+                    if scout_number >= 9:
+                        scout_number = 1
+                new_unit = Scout(scout_number)
+                p2_place_unit(new_unit)
+        if unit_creation[0].lower() == "w":
+            temp_unit_list = []
+            for unit in player_1_units:
+                if unit.name == "Wind_Walker":
+                    temp_unit_list.append(unit)
+            for unit in player_2_units:
+                if unit.name == "Wind_Walker":
+                    temp_unit_list.append(unit)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                player_1_current_mana -= 1
+                wind_walker_number = len(temp_unit_list)
+                while wind_walker_number in sorted_temp_units:
+                    wind_walker_number += 1
+                    if wind_walker_number >= 9:
+                        wind_walker_number = 1
+                new_unit = Wind_walker(wind_walker_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                player_2_current_mana -= 1
+                wind_walker_number = len(temp_unit_list)
+                while wind_walker_number in sorted_temp_units:
+                    wind_walker_number += 1
+                    if wind_walker_number >= 9:
+                        wind_walker_number = 1
+                new_unit = Wind_walker(wind_walker_number)
+                p2_place_unit(new_unit)
+        if unit_creation[0].lower() == "t":
+            temp_unit_list = []
+            for unit in player_1_units:
+                if unit.name == "Tactician":
+                    temp_unit_list.append(unit)
+            for unit in player_2_units:
+                if unit.name == "Tactician":
+                    temp_unit_list.append(unit)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                if player_1_current_mana < 2:
+                    print("Not enough Mana")
+                    create_unit()
+                player_1_current_mana -= 2
+                tactician_number = len(temp_unit_list)
+                while tactician_number in sorted_temp_units:
+                    tactician_number += 1
+                    if tactician_number >= 9:
+                        tactician_number = 1
+                new_unit = Tactician(tactician_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                if player_2_current_mana < 2:
+                    print("Not enough Mana")
+                    create_unit()
+                player_2_mana -= 2
+                tactician_number = len(temp_unit_list)
+                while tactician_number in sorted_temp_units:
+                    tactician_number += 1
+                    if tactician_number >= 9:
+                        tactician_number = 1
+                new_unit = Tactician(tactician_number)
+                p2_place_unit(new_unit)
+        if unit_creation[0].lower() == "d":
+            temp_unit_list = []
+            for unit in player_1_units:
+                if unit.name == "Drummer":
+                    temp_unit_list.append(unit)
+            for unit in player_2_units:
+                if unit.name == "Drummer":
+                    temp_unit_list.append(unit)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                if player_1_current_mana < 2:
+                    print("Not enough Mana")
+                    create_unit()
+                player_1_current_mana -= 2
+                drummer_number = len(temp_unit_list)
+                while drummer_number in sorted_temp_units:
+                    drummer_number += 1
+                    if drummer_number >= 9:
+                        drummer_number = 1
+                new_unit = Drummer(drummer_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                if player_2_current_mana < 2:
+                    print("Not enough Mana")
+                    create_unit()
+                player_2_mana -= 2
+                drummer_number = len(temp_unit_list)
+                while drummer_number in sorted_temp_units:
+                    drummer_number += 1
+                    if drummer_number >= 9:
+                        drummer_number = 1
+                new_unit = Drummer(drummer_number)
+                p2_place_unit(new_unit)
+        if unit_creation[0].lower() == "p":
+            temp_unit_list = []
+            for unit in player_1_units:
+                if unit.name == "Paladin":
+                    temp_unit_list.append(unit)
+            for unit in player_2_units:
+                if unit.name == "Paladin":
+                    temp_unit_list.append(unit)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                if player_1_current_mana < 3:
+                    print("Not enough Mana")
+                    create_unit()
+                player_1_current_mana -= 3
+                paladin_number = len(temp_unit_list)
+                while paladin_number in sorted_temp_units:
+                    paladin_number += 1
+                    if paladin_number >= 9:
+                        paladin_number = 1
+                new_unit = Paladin(paladin_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                if player_2_current_mana < 3:
+                    print("Not enough Mana")
+                    create_unit()
+                player_2_mana -= 3
+                paladin_number = len(temp_unit_list)
+                while paladin_number in sorted_temp_units:
+                    paladin_number += 1
+                    if paladin_number >= 9:
+                        paladin_number = 1
+                new_unit = Paladin(paladin_number)
+                p2_place_unit(new_unit)
+        if unit_creation[0].lower() == "i":
+            temp_unit_list = []
+            for unit in player_1_units:
+                if unit.name == "Investor":
+                    temp_unit_list.append(unit)
+            for unit in player_2_units:
+                if unit.name == "Investor":
+                    temp_unit_list.append(unit)
+            sorted_temp_units = sorted(temp_unit_list, key=lambda temp_unit_list: unit.number)
+            if len(temp_unit_list) == 9:
+                print("Too many of that unit")
+                create_unit()
+            if is_player_1_turn == True:
+                if player_1_current_mana < 3:
+                    print("Not enough Mana")
+                    create_unit()
+                player_1_current_mana -= 3
+                investor_number = len(temp_unit_list)
+                while investor_number in sorted_temp_units:
+                    investor_number += 1
+                    if investor_number >= 9:
+                        investor_number = 1
+                new_unit = Investor(investor_number)
+                p1_place_unit(new_unit)
+            if is_player_1_turn == False:
+                if player_1_current_mana < 3:
+                    print("Not enough Mana")
+                    create_unit()
+                player_2_mana -= 3
+                investor_number = len(temp_unit_list)
+                while investor_number in sorted_temp_units:
+                    investor_number += 1
+                    if investor_number >= 9:
+                        investor_number = 1
+                new_unit = Investor(investor_number)
+                p2_place_unit(new_unit)
+        else:
+            print("Invalid selection")
+            create_unit()
+    else:
+        print("Invalid selection")
+        create_unit()
+        
+def p1_place_unit(new_unit):
+    global player_1_units
+    global action_count
+    global scout_number
+    global wind_walker_number
+    global tactician_number
+    global drummer_number
+    global paladin_number
+    global investor_number
+    global is_player_1_turn
+    global player_1_current_mana
+    global player_2_current_mana
+    letters = ["B", "C", "D", "E", "F", "G", "H", "I"]
+    numbers = [2, 3, 4, 5, 6, 7, 8, 9]
+    not_allowed = []
+    for letter in letters:
+        for number in numbers:
+            space = letter + str(number)
+            not_allowed.append(space)
+    new_unit_id = f"{new_unit.name} {new_unit.number}"
+    allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
+    print("Actions         (R)eturn")
+    print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+    print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
+    print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
+    print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
+    print(f"{NEGATIVE}C - Conquest{GREEN}{LIGHT_WHITE}        D   {line_4}")
+    print(f"{LIGHT_BLUE}s - Scout{LIGHT_WHITE}           E   {line_5}")
+    print(f"{CYAN}w - Wind Walker{LIGHT_WHITE}     F   {line_6}")
+    print(f"{LIGHT_PURPLE}t - Tactician{LIGHT_WHITE}       G   {line_7}")
+    print(f"{LIGHT_CYAN}d - Drummer{LIGHT_WHITE}         H   {line_8}")
+    print(f"{YELLOW}p - Paladin{LIGHT_WHITE}         I   {line_9}")
+    print(f"{LIGHT_GREEN}i - Investor{LIGHT_WHITE}        J   {line_10}")
+    place_unit = input("Select space for unit(May only place on edge spaces, input must be exact, A1 format): ")
+    if place_unit.lower() == "return" or place_unit.lower() == "r":
+        if is_player_1_turn == True:
+            if new_unit.name == "Scout":
+                scout_number -= 1
+                player_1_current_mana += 1
+            if new_unit.name == "Wind_Walker":
+                wind_walker_number -= 1
+                player_1_current_mana += 1
+            if new_unit.name == "Tactician":
+                tactician_number -= 1
+                player_1_current_mana += 2
+            if new_unit.name == "Drummer":
+                drummer_number -= 1
+                player_1_current_mana += 2
+            if new_unit.name == "Paladin":
+                paladin_number -= 1
+                player_1_current_mana += 3
+            if new_unit.name == "Investor":
+                investor_number -= 1
+                player_1_current_mana += 3
+        if is_player_1_turn == False:
+            if new_unit.name == "Scout":
+                scout_number -= 1
+                player_2_current_mana += 1
+            if new_unit.name == "Wind_Walker":
+                wind_walker_number -= 1
+                player_2_current_mana += 1
+            if new_unit.name == "Tactician":
+                tactician_number -= 1
+                player_2_current_mana += 2
+            if new_unit.name == "Drummer":
+                drummer_number -= 1
+                player_2_current_mana += 2
+            if new_unit.name == "Paladin":
+                paladin_number -= 1
+                player_2_current_mana += 3
+            if new_unit.name == "Investor":
+                investor_number -= 1
+                player_2_current_mana += 3
+        create_unit()
+    if place_unit in not_allowed:
+        print("Space not allowed")
+        p1_place_unit(new_unit)
+    if place_unit in allowed:
+        space_is = []
+        for letter in place_unit:
+            space_is.append(letter)
+        placement_letter = space_is[0]
+        placement_number = int(space_is[1]) - 1
+        print(placement_letter, placement_number)
+        placement = map_placement(placement_letter)
+        print(placement)
+        print(placement[placement_number])
+        if placement[placement_number] != "[]":
+            print("Space already occupied")
+            p1_place_unit()
+        if new_unit.name == "Scout":
+            placement[int(placement_number)] = f"{LIGHT_BLUE}s{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {LIGHT_BLUE}Scout{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Wind_Walker":
+            placement[int(placement_number)] = f"{CYAN}w{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {CYAN}Wind Walker{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Tactician":
+            placement[int(placement_number)] = f"{LIGHT_PURPLE}t{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {LIGHT_PURPLE}Tactician{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Drummer":
+            placement[int(placement_number)] = f"{LIGHT_CYAN}d{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {LIGHT_CYAN}Drummer{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Paladin":
+            placement[int(placement_number)] = f"{YELLOW}p{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {YELLOW}Paladin{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Investor":
+            placement[int(placement_number)] = f"{LIGHT_GREEN}i{new_unit.number}{LIGHT_WHITE}"
+            player_1_units.append(new_unit)
+            print(f"Added {LIGHT_GREEN}Investor{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_1_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        map_join(placement_letter, placement)
+        if place_unit not in allowed and place_unit not in not_allowed:
+            print("Invalid space selection")
+            p1_place_unit(new_unit)
+    else:
+        print("Invalid unit selection")
+        p1_place_unit(new_unit)
+    action_count -= 1
+    if action_count == 0:
+        turn_count += 1
+        action_count = 2
+    game_loop()
+
+def p2_place_unit(new_unit):
+    global player_2_units
+    global action_count
+    global scout_number
+    global wind_walker_number
+    global tactician_number
+    global drummer_number
+    global paladin_number
+    global investor_number
+    letters = ["B", "C", "D", "E", "F", "G", "H", "I"]
+    numbers = [2, 3, 4, 5, 6, 7, 8, 9]
+    not_allowed = []
+    for letter in letters:
+        for number in numbers:
+            space = letter + str(number)
+            not_allowed.append(space)
+    new_unit_id = f"{new_unit.name} {new_unit.number}"
+    allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
+    print("Actions         (R)eturn")
+    print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+    print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
+    print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
+    print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
+    print(f"{NEGATIVE}C - Conquest{GREEN}{LIGHT_WHITE}        D   {line_4}")
+    print(f"{LIGHT_BLUE}s - Scout{LIGHT_WHITE}           E   {line_5}")
+    print(f"{CYAN}w - Wind Walker{LIGHT_WHITE}     F   {line_6}")
+    print(f"{LIGHT_PURPLE}t - Tactician{LIGHT_WHITE}       G   {line_7}")
+    print(f"{LIGHT_CYAN}d - Drummer{LIGHT_WHITE}         H   {line_8}")
+    print(f"{YELLOW}p - Paladin{LIGHT_WHITE}         I   {line_9}")
+    print(f"{LIGHT_GREEN}i - Investor{LIGHT_WHITE}        J   {line_10}")
+    place_unit = input("Select space for unit(May only place on edge spaces, input must be exact, A1 format): ")
+    if place_unit.lower() == "return" or place_unit.lower() == "r":
+        if new_unit.name == "Scout":
+            scout_number -= 1
+            player_2_mana += 1
+        if new_unit.name == "Wind_Walker":
+            wind_walker_number -= 1
+            player_2_mana += 1
+        if new_unit.name == "Tactician":
+            tactician_number -= 1
+            player_2_mana += 2
+        if new_unit.name == "Drummer":
+            drummer_number -= 1
+            player_2_mana += 2
+        if new_unit.name == "Paladin":
+            paladin_number -= 1
+            player_2_mana += 3
+        if new_unit.name == "Investor":
+            investor_number -= 1
+            player_2_mana += 3
+        create_unit()
+    if place_unit in not_allowed:
+        print("Space not allowed")
+        p1_place_unit(new_unit)
+    if place_unit in allowed:
+        space_is = []
+        for letter in place_unit:
+            space_is.append(letter)
+        placement_letter = space_is[0]
+        placement_number = int(space_is[1]) - 1
+        print(placement_letter, placement_number)
+        placement = map_placement(placement_letter)
+        print(placement)
+        print(placement[placement_number])
+        if placement[placement_number] != "[]":
+            print("Space already occupied")
+            p2_place_starting_units()
+        if new_unit.name == "Scout":
+            placement[int(placement_number)] = f"{LIGHT_BLUE}s{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {LIGHT_BLUE}Scout{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Wind_Walker":
+            placement[int(placement_number)] = f"{CYAN}w{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {CYAN}Wind Walker{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Tactician":
+            placement[int(placement_number)] = f"{LIGHT_PURPLE}t{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {LIGHT_PURPLE}Tactician{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Drummer":
+            placement[int(placement_number)] = f"{LIGHT_CYAN}d{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {LIGHT_CYAN}Drummer{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Paladin":
+            placement[int(placement_number)] = f"{YELLOW}p{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {YELLOW}Paladin{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        if new_unit.name == "Investor":
+            placement[int(placement_number)] = f"{LIGHT_GREEN}i{new_unit.number}{LIGHT_WHITE}"
+            player_2_units.append(new_unit)
+            print(f"Added {LIGHT_GREEN}Investor{LIGHT_WHITE} {new_unit.number}")
+            for unit in player_2_units:
+                if new_unit_id == f"{unit.name} {unit.number}":
+                    unit.location = place_unit
+        map_join(placement_letter, placement)
+        if place_unit not in allowed and place_unit not in not_allowed:
+            print("Invalid space selection")
+            p2_place_unit(new_unit)
+    else:
+        print("Invalid unit selection")
+        p2_place_unit(new_unit)
+    action_count -= 1
+    if action_count == 0:
+        turn_count += 1
+        action_count = 2
+    game_loop()
+    
+def resource_gain():
+    pass
