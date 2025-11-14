@@ -15,6 +15,10 @@ player_1_units = []
 player_2_units = []
 p1_first_units = copy.deepcopy(player_1_units)
 p2_first_units = copy.deepcopy(player_2_units)
+player_1_cards = []
+player_2_cards = []
+deck = []
+discarded_cards = []
 scout_number = 0
 wind_walker_number = 0
 tactician_number = 0
@@ -64,6 +68,7 @@ def game_loop():
     global previous_turn_count
     global is_player_1_turn
     if turn_count == 0:
+        create_deck()
         generate_map()
     if turn_count == .5:
         p1_place_starting_units()
@@ -80,6 +85,15 @@ def game_loop():
     print(f"{YELLOW}p - Paladin{LIGHT_WHITE}         I   {line_9}")
     print(f"{LIGHT_GREEN}i - Investor{LIGHT_WHITE}        J   {line_10}")
     if turn_count == 0:
+        player_1 = "player_1"
+        player_2 = "player_2"
+        previous_screen = "game_loop"
+        draw_cards(player_1)
+        draw_cards(player_1)
+        draw_cards(player_1)
+        draw_cards(player_2)
+        draw_cards(player_2)
+        draw_cards(player_2)
         choose_starting_units()
     turn_determiner = turn_count % 2
     print(f"Actions Remaining: {action_count}")
@@ -630,41 +644,34 @@ def p2_place_starting_units():
                 for first in split_unit:
                     if place_unit == first[0]:
                         resplit_unit = first[1].split(" ")
-                        print(resplit_unit)
                         if resplit_unit[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                 map_join(placement_letter, placement)
@@ -714,6 +721,8 @@ def actions():
     global player_1_current_mana
     global player_2_current_mana
     global turn_count
+    global player_1_cards
+    global player_2_cards
     print("Actions      (M)ove    (C)ard    (E)xpend Mana    (B)uy Unit   (R)eturn")
     turn_determiner = turn_count % 2
     if turn_determiner != 0 and turn_count > 0:
@@ -730,6 +739,8 @@ def actions():
         else:
             previous_screen = "actions"
             create_unit()
+    if action_selection.lower() == "card" or action_selection.lower() == "c":
+        use_card()            
     if action_selection.lower() == "return" or action_selection.lower() == "r":
         print("Returning")
         game_loop()
@@ -1291,6 +1302,75 @@ def p2_place_unit(new_unit):
         turn_count += 1
         action_count = 2
     game_loop()
+
+def create_deck():
+    global deck
+    global discarded_cards
+    global previous_screen
+    global is_player_1_turn
+    count = 4
+    disc_count = 0
+    temp_count = 0
+    card_types = ["get a 1 mana unit", "get a 2 mana unit", "get a 3 mana unit", "refund one of your units", "get 1 mana", "get 1 conquest point", "destroy one of your opponents units", "move a unit 2 spaces", "opponent loses one conquest point", "get 2 mana"]
+    if len(discarded_cards) == 0:
+        for card in card_types:
+            while temp_count < count:
+                deck.append(card)
+                temp_count += 1
+            if temp_count == 4:
+                temp_count = 0
+    if len(discarded_cards) != 0:
+        for card in card_types:
+            if card in discarded_cards:
+                disc_count += 1
+                new_count = count - disc_count
+                while temp_count < new_count:
+                    deck.append(card)
+                    temp_count += 1
+    if previous_screen == "game_loop":
+        game_loop()
+    if previous_screen == "draw_cards":
+        if is_player_1_turn == True:
+            player_1 = "player_1"
+            draw_cards(player_1)
+        if is_player_1_turn == False:
+            player_2 = "player_2"
+            draw_cards(player_2)
+    
+    
+def draw_cards(player):
+    global deck
+    global player_1_cards
+    global player_2_cards
+    global previous_screen
+    if len(deck) == 0:
+        previous_screen = "draw_cards"
+        create_deck()
+    if player == "player_1":
+        rand_card = random.choice(deck)
+        player_1_cards.append(rand_card)
+        deck.remove(rand_card)
+    if player == "player_2":
+        rand_card = random.choice(deck)
+        player_2_cards.append(rand_card)
+        deck.remove(rand_card)
+        
+def use_card():
+    global player_1_cards
+    global player_2_cards
+    global is_player_1_turn
+    count = 0
+    print("Actions         (R)eturn")
+    if is_player_1_turn == True:
+        for card in player_1_cards:
+            count += 1
+            print(f"{count}. {card}")
+    if is_player_1_turn == False:
+        for card in player_2_cards:
+            count += 1
+            print(f"{count}. {card}")
+    card_use = input("Choose a card number to use: ")
+    
     
 def resource_gain():
     pass
