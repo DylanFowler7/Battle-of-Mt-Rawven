@@ -8,13 +8,15 @@ from units import *
 card_list = []
 turn_count = 0
 previous_turn_count = 0
-player_1_current_mana = 3
-player_2_current_mana = 3
+player_1_current_mana = 1
+player_2_current_mana = 1
 bot_current_mana = 6
 player_1_units = []
 player_2_units = []
 p1_first_units = copy.deepcopy(player_1_units)
 p2_first_units = copy.deepcopy(player_2_units)
+player_1_conquest_points = 0
+player_2_conquest_points = 0
 player_1_cards = []
 player_2_cards = []
 deck = []
@@ -72,8 +74,7 @@ def game_loop():
         generate_map()
     if turn_count == .5:
         p1_place_starting_units()
-    print("Commands         (A)ctions    (G)uide    (U)nits    (Q)uit")
-    print(f"{LIGHT_WHITE}Guide                   1   2   3   4   5   6   7   8   9   10")
+    print(f"{LIGHT_WHITE}Map Guide               1   2   3   4   5   6   7   8   9   10")
     print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
     print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
     print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
@@ -96,6 +97,7 @@ def game_loop():
         draw_cards(player_2)
         choose_starting_units()
     turn_determiner = turn_count % 2
+    print("Commands         (A)ctions    (G)uide    (U)nits    (Q)uit")
     print(f"Actions Remaining: {action_count}")
     if turn_count > 0 and previous_turn_count < turn_count:
         previous_turn_count = turn_count
@@ -405,7 +407,7 @@ def p1_place_starting_units():
                 not_allowed.append(space)
         allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
         print("Actions         (G)uide")
-        print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+        print(f"{LIGHT_WHITE}Map Guide               1   2   3   4   5   6   7   8   9   10")
         print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
         print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
         print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
@@ -444,7 +446,14 @@ def p1_place_starting_units():
                 for letter in space_selection:
                     space_is.append(letter)
                 placement_letter = space_is[0]
-                placement_number = int(space_is[1]) - 1
+                if len(space_is) == 3:
+                    two_digit = "".join(space_is[1:])
+                else:
+                    two_digit = ""
+                if len(two_digit) == 2:
+                    placement_number = int(two_digit) - 1
+                else:
+                    placement_number = int(space_is[1]) - 1
                 placement = map_placement(placement_letter)
                 if placement[placement_number] != "[]":
                     print("Space already occupied")
@@ -490,37 +499,31 @@ def p1_place_starting_units():
                         if resplit_unit[0] == "Scout":
                             placement[int(placement_number)] = f"{LIGHT_BLUE}s{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Wind_Walker":
                             placement[int(placement_number)] = f"{CYAN}w{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Tactician":
                             placement[int(placement_number)] = f"{LIGHT_PURPLE}t{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Drummer":
                             placement[int(placement_number)] = f"{LIGHT_CYAN}d{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Paladin":
                             placement[int(placement_number)] = f"{YELLOW}p{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                         if resplit_unit[0] == "Investor":
                             placement[int(placement_number)] = f"{LIGHT_GREEN}w{resplit_unit[1]}{LIGHT_WHITE}"
                             for unit in player_1_units:
-                                print(first[1], unit)
                                 if first[1] == f"{unit.name} {unit.number}":
                                     unit.location = space_selection
                 map_join(placement_letter, placement)
@@ -559,7 +562,7 @@ def p2_place_starting_units():
                 not_allowed.append(space)
         allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
         print("Actions         (G)uide")
-        print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+        print(f"{LIGHT_WHITE}Map Guide               1   2   3   4   5   6   7   8   9   10")
         print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
         print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
         print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
@@ -598,11 +601,15 @@ def p2_place_starting_units():
                 for letter in space_selection:
                     space_is.append(letter)
                 placement_letter = space_is[0]
-                placement_number = int(space_is[1]) - 1
-                print(placement_letter, placement_number)
+                if len(space_is) == 3:
+                    two_digit = "".join(space_is[1:])
+                else:
+                    two_digit = ""
+                if len(two_digit) == 2:
+                    placement_number = int(two_digit) - 1
+                else:
+                    placement_number = int(space_is[1]) - 1
                 placement = map_placement(placement_letter)
-                print(placement)
-                print(placement[placement_number])
                 if placement[placement_number] != "[]":
                     print("Space already occupied")
                     p2_place_starting_units()
@@ -680,7 +687,6 @@ def p2_place_starting_units():
                 if place_unit in unit_second:
                     for unit in split_unit:
                         if place_unit == unit[1]:
-                            print(unit)
                             p2_first_units.pop(int(unit[0]) - 1)
             if space_selection not in allowed and space_selection not in not_allowed:
                 print("Invalid space selection")
@@ -697,7 +703,7 @@ def unit_display():
             print(units.unit_display())
     else:
         for units in player_2_units:
-            print(units)
+            print(units.unit_display())
     unit_input = input("Select unit(Input must match unit name and number) or (R)eturn: ")
     if is_player_1_turn:
         for unit_list in player_1_units:
@@ -723,12 +729,26 @@ def actions():
     global turn_count
     global player_1_cards
     global player_2_cards
-    print("Actions      (M)ove    (C)ard    (E)xpend Mana    (B)uy Unit   (R)eturn")
+    global is_player_1_turn
+    global player_1_conquest_points
+    global player_2_conquest_points
+    player = ""
+    print("Actions      (M)ove    (C)ard    (E)xchange Conquest    (B)uy Unit   (R)eturn")
+    if is_player_1_turn == True:
+        print(f"Current Mana: {player_1_current_mana}")
+        print(f"Current Conquest Points: {player_1_conquest_points}")
+        player = "player_1"
+    if is_player_1_turn == False:
+        print(f"Current Mana: {player_2_current_mana}")
+        print(f"Current Conquest Points: {player_1_conquest_points}")
+        player = "player_2"
     turn_determiner = turn_count % 2
     if turn_determiner != 0 and turn_count > 0:
         action_selection = input(f"Player 1: Select an action: ")
     if turn_determiner == 0 and turn_count > 0:
         action_selection = input(f"Player 2: Select an action: ")
+    if action_selection.lower() == "mover" or action_selection.lower() == "m":
+        move(player)
     if action_selection.lower() == "buy" or action_selection.lower() == "unit" or action_selection.lower() == "buy unit" or action_selection.lower() == "b":
         if is_player_1_turn == True and player_1_current_mana == 0:
             print("Not enough mana to buy a unit")
@@ -740,7 +760,21 @@ def actions():
             previous_screen = "actions"
             create_unit()
     if action_selection.lower() == "card" or action_selection.lower() == "c":
-        use_card()            
+        use_card(player)            
+    if action_selection.lower() == "exchange" or action_selection.lower() == "conquest" or action_selection.lower() == "exchange conquest" or action_selection.lower() == "e":
+        confirm = input("Exchange 1 Conquest Point for 3 Mana? (Y)es or (N)o: ")
+        if confirm.lower() == "yes" or confirm.lower() == "y":
+            if is_player_1_turn == True:
+                if player_1_conquest_points < 1:
+                    print("Not enough Coquest Points")
+                    actions()
+            if is_player_1_turn == False:
+                if player_2_conquest_points < 1:
+                    print("Not enough Coquest Points")
+                    actions()
+            exchange_conquest(player)
+        if confirm.lower() == "no" or confirm.lower() == "n":
+            actions()
     if action_selection.lower() == "return" or action_selection.lower() == "r":
         print("Returning")
         game_loop()
@@ -1058,7 +1092,7 @@ def p1_place_unit(new_unit):
     new_unit_id = f"{new_unit.name} {new_unit.number}"
     allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
     print("Actions         (R)eturn")
-    print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+    print(f"{LIGHT_WHITE}Map Guide               1   2   3   4   5   6   7   8   9   10")
     print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
     print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
     print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
@@ -1118,11 +1152,15 @@ def p1_place_unit(new_unit):
         for letter in place_unit:
             space_is.append(letter)
         placement_letter = space_is[0]
-        placement_number = int(space_is[1]) - 1
-        print(placement_letter, placement_number)
+        if len(space_is) == 3:
+            two_digit = "".join(space_is[1:])
+        else:
+            two_digit = ""
+        if len(two_digit) == 2:
+            placement_number = int(two_digit) - 1
+        else:
+            placement_number = int(space_is[1]) - 1
         placement = map_placement(placement_letter)
-        print(placement)
-        print(placement[placement_number])
         if placement[placement_number] != "[]":
             print("Space already occupied")
             p1_place_unit()
@@ -1200,7 +1238,7 @@ def p2_place_unit(new_unit):
     new_unit_id = f"{new_unit.name} {new_unit.number}"
     allowed = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10"]
     print("Actions         (R)eturn")
-    print(f"{LIGHT_WHITE}                        1   2   3   4   5   6   7   8   9   10")
+    print(f"{LIGHT_WHITE}Map Guide               1   2   3   4   5   6   7   8   9   10")
     print(f"{BROWN}M - Mountain{LIGHT_WHITE}        A   {line_1}")
     print(f"{PURPLE}A - Arcane{LIGHT_WHITE}          B   {line_2}")
     print(f"{GREEN}R - Resupply{LIGHT_WHITE}        C   {line_3}")
@@ -1240,11 +1278,15 @@ def p2_place_unit(new_unit):
         for letter in place_unit:
             space_is.append(letter)
         placement_letter = space_is[0]
-        placement_number = int(space_is[1]) - 1
-        print(placement_letter, placement_number)
+        if len(space_is) == 3:
+            two_digit = "".join(space_is[1:])
+        else:
+            two_digit = ""
+        if len(two_digit) == 2:
+            placement_number = int(two_digit) - 1
+        else:
+            placement_number = int(space_is[1]) - 1
         placement = map_placement(placement_letter)
-        print(placement)
-        print(placement[placement_number])
         if placement[placement_number] != "[]":
             print("Space already occupied")
             p2_place_starting_units()
@@ -1337,7 +1379,6 @@ def create_deck():
             player_2 = "player_2"
             draw_cards(player_2)
     
-    
 def draw_cards(player):
     global deck
     global player_1_cards
@@ -1355,22 +1396,199 @@ def draw_cards(player):
         player_2_cards.append(rand_card)
         deck.remove(rand_card)
         
-def use_card():
+def use_card(player):
     global player_1_cards
     global player_2_cards
-    global is_player_1_turn
+    global player_1_current_mana
+    global player_2_current_mana
+    global action_count
     count = 0
+    print(player)
     print("Actions         (R)eturn")
-    if is_player_1_turn == True:
+    if player == "player_1":
         for card in player_1_cards:
             count += 1
             print(f"{count}. {card}")
-    if is_player_1_turn == False:
+    if player == "player_2":
         for card in player_2_cards:
             count += 1
             print(f"{count}. {card}")
     card_use = input("Choose a card number to use: ")
-    
-    
+    if card_use.isdigit() == False:
+        print("Invalid selection")
+        use_card(player)
+    if player == "player_1":
+        if player_1_cards[int(card_use) - 1] == "get 1 mana":
+            player_1_current_mana += 1
+            player_1_cards.pop(int(card_use))
+        if player_1_cards[int(card_use) - 1] == "get 2 mana":
+            player_1_current_mana += 2
+            player_1_cards.pop(int(card_use))
+    if player == "player_2":
+        if player_2_cards[int(card_use) - 1] == "get 1 mana":
+            player_2_current_mana += 1
+            player_2_cards.pop(int(card_use))
+        if player_2_cards[int(card_use) - 1] == "get 2 mana":
+            player_2_current_mana += 2
+            player_2_cards.pop(int(card_use))
+    action_count -= 1
+    if action_count == 0:
+        turn_count += 1
+        action_count = 2
+    game_loop()
+        
+
+def exchange_conquest(player):
+    global player_1_conquest_points
+    global player_2_conquest_points
+    global player_1_current_mana
+    global player_2_current_mana
+    global action_count
+    if player == "player_1":
+        player_1_current_mana += 3
+        player_1_conquest_points -= 1
+    if player == "player_2":    
+        player_2_current_mana += 3
+        player_2_conquest_points -= 1
+    action_count -= 1
+    if action_count == 0:
+        turn_count += 1
+        action_count = 2
+    game_loop()
+
+def move(player):
+    global player_1_units
+    global player_2_units
+    if player == "player_1":
+        for units in player_1_units:
+            print(units.unit_display())
+    if player == "player_2":
+        for units in player_2_units:
+            print(units.unit_display())
+    moving_unit = input("Choose Unit to move: ")
+    if player == "player_1":
+        for unit in player_1_units:
+            if moving_unit == f"{unit.name} {unit.number}":
+                chosen_space = input("Choose space for unit to move to: ")
+            else:
+                print("Invalid unit")
+                move(player)
+    if player == "player_2":
+        for unit in player_2_units:
+            if moving_unit == f"{unit.name} {unit.number}":
+                chosen_space = input("Choose space for unit to move to: ")
+            else:
+                print("Invalid unit")
+                move(player)
+    allowed_spaces(moving_unit, chosen_space)
+        
+
+def allowed_spaces(moving_unit, chosen_space):
+    global is_player_1_turn
+    if is_player_1_turn == True:
+        player = "player_1"
+        for unit in player_1_units:
+            if moving_unit == f"{unit.name} {unit.number}":
+                unit_to_move = unit
+                unit_type = unit.name
+    if is_player_1_turn == False:
+        player = "player_2"
+        for unit in player_2_units:
+            if moving_unit == f"{unit.name} {unit.number}":
+                unit_to_move = unit
+                unit_type = unit.name
+    caps = list(string.ascii_uppercase)
+    final_spaces = []
+    split_starting_space = []
+    starting_space = unit_to_move.location
+    split_starting_space = list(starting_space)
+    placement_letter = split_starting_space[0]
+    if len(split_starting_space) == 3:
+        two_digit = "".join(split_starting_space[1:])
+    else:
+        two_digit = ""
+    if len(two_digit) == 2:
+        placement_number = int(two_digit) - 1
+    else:
+        placement_number = int(split_starting_space[1]) - 1
+    placement = map_placement(placement_letter)
+    for cap in caps:
+        if split_starting_space[0] == cap:
+            current_letter = caps.index(cap)
+    final_spaces.append(split_starting_space[0] + str(int(split_starting_space[1])))
+    final_spaces.append(split_starting_space[0] + str((int(split_starting_space[1]) - 2)))
+    if int(split_starting_space[1]) > 9:
+        final_spaces.remove(split_starting_space[0] + str(int(split_starting_space[1])))
+    if int(split_starting_space[1]) - 2 < 0:
+        final_spaces.remove(split_starting_space[0] + str((int(split_starting_space[1]) - 2)))
+    final_spaces.append((caps[current_letter - 1]) + str((int(starting_space[1]) - 1)))
+    final_spaces.append((caps[current_letter + 1]) + str((int(starting_space[1]) - 1)))
+    if current_letter - 1 < 0:
+        final_spaces.remove((caps[current_letter - 1]) + str((int(starting_space[1]) - 1)))
+    if current_letter + 1 > 9:
+        final_spaces.remove((caps[current_letter + 1]) + str((int(starting_space[1]) - 1)))
+    if player == "player_1":
+        if unit_type == "Wind_Walker":
+            for space in final_spaces:
+                space_is = []
+                for letter in space:
+                    space_is.append(letter)
+                print(space_is)
+                placement_letter = space_is[0]
+                if len(space_is) == 3:
+                    two_digit = int("".join(space_is[1:]))
+                    two_digit += 1
+                else:
+                    two_digit = ""
+                print(two_digit)
+                if len(two_digit) == 2:
+                    placement_number = int(two_digit) - 1
+                else:
+                    placement_number = int(space_is[1])
+                placement = map_placement(placement_letter)
+                for cap in caps:
+                    if placement_letter == cap:
+                        mountain_space = caps.index(cap)
+                print(placement[placement_number])
+            if placement[placement_number] == "M":
+                final_spaces.append(space_is[0] + str(placement_number))
+                print(final_spaces)
+                final_spaces.append(space_is[0] + str((int(placement_number) - 2)))
+            if int(placement_number) > 9:
+                final_spaces.remove(space_is[0] + str(placement_number))
+            print(final_spaces)
+            if int(placement_number) - 2 < 0:
+                final_spaces.remove(space_is[0] + str((int(placement_number) - 2)))
+            final_spaces.append((caps[int(space_is[0]) - 1]) + str((int(placement_number) - 1)))
+            final_spaces.append((caps[int(space_is[0]) + 1]) + str((int(placement_number) - 1)))
+            if space_is[0] - 1 < 0:
+                final_spaces.remove((caps[int(space_is[0]) - 1]) + str((int(placement_number) - 1)))
+            if space_is[0] + 1 > 9:
+                final_spaces.remove((caps[int(space_is[0]) + 1]) + str((int(placement_number) - 1)))
+            if chosen_space in final_spaces:
+                final_spaces.remove(split_starting_space[0] + str(starting_space[1] - 1))
+    print(final_spaces)
+    space_is = []
+    for letter in chosen_space:
+        space_is.append(letter)
+    placement_letter = space_is[0]
+    if len(space_is) == 3:
+        two_digit = "".join(space_is[1:])
+    else:
+        two_digit = ""
+    if len(two_digit) == 2:
+        placement_number = int(two_digit) - 1
+    else:
+        placement_number = int(space_is[1]) - 1
+    placement = map_placement(placement_letter)
+    if placement[placement_number] != "[]":
+        if placement[placement_number] == "M" and unit.name != "Wind_Walker":
+            print("Cannot move onto mountian")
+            move(player)
+        if (placement[placement_number]) == "M" and unit.name == "Wind_walker":
+            print("Choose a space adjacent to mountain")
+            move(player)
+        
+
 def resource_gain():
     pass
